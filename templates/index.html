@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marks Predictor — by Sagar Datti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --board: #1e2b26;
+    --board-2: #16211d;
+    --chalk: #f4f1e8;
+    --chalk-dim: #b9c4bc;
+    --grid-line: rgba(244, 241, 232, 0.07);
+    --yellow: #e8c547;
+    --mint: #7fd8b0;
+    --red-pen: #ff6b5b;
+    --frame: #6b4a35;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--chalk);
+    background:
+      radial-gradient(ellipse at top left, rgba(127, 216, 176, 0.06), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(232, 197, 71, 0.05), transparent 55%),
+      var(--board);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 760px;
+    background: var(--board-2);
+    border: 10px solid var(--frame);
+    border-radius: 6px;
+    box-shadow:
+      0 30px 70px rgba(0, 0, 0, 0.5),
+      inset 0 0 60px rgba(0, 0, 0, 0.35);
+    padding: 40px 42px 32px;
+    position: relative;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  header { text-align: center; margin-bottom: 30px; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: 52px;
+    margin: 0 0 4px;
+    color: var(--chalk);
+    text-shadow: 0 0 14px rgba(244, 241, 232, 0.15);
+  }
+
+  p.subtitle {
+    font-size: 13px;
+    color: var(--chalk-dim);
+    margin: 0;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--mint);
+  }
+
+  .input-wrap { position: relative; display: flex; align-items: center; }
+
+  input[type="number"] {
+    width: 100%;
+    padding: 13px 52px 13px 14px;
+    font-size: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    background: rgba(244, 241, 232, 0.06);
+    border: 1.5px dashed rgba(244, 241, 232, 0.3);
+    border-radius: 8px;
+    outline: none;
+    color: var(--chalk);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  input[type="number"]::placeholder { color: var(--chalk-dim); }
+
+  input[type="number"]:focus {
+    border-color: var(--mint);
+    border-style: solid;
+    background: rgba(127, 216, 176, 0.08);
+  }
+
+  .unit {
+    position: absolute;
+    right: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--chalk-dim);
+    pointer-events: none;
+  }
+
+  button {
+    margin-top: 14px;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--board-2);
+    cursor: pointer;
+    background: var(--yellow);
+    letter-spacing: 0.01em;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  button:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(232, 197, 71, 0.25); }
+  button:active { transform: translateY(0); }
+
+  .error-box {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(255, 107, 91, 0.1);
+    border: 1px dashed rgba(255, 107, 91, 0.5);
+    color: var(--red-pen);
+    font-size: 13px;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .result {
+    margin-top: 24px;
+    text-align: center;
+  }
+
+  .result .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+  }
+
+  .result .value {
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: 64px;
+    color: var(--yellow);
+    margin: 2px 0 0;
+    line-height: 1;
+  }
+
+  .result .hint {
+    font-size: 12px;
+    color: var(--chalk-dim);
+    margin-top: 4px;
+  }
+
+  .unreliable-note {
+    margin: 10px auto 0;
+    max-width: 420px;
+    font-size: 12px;
+    color: var(--red-pen);
+    background: rgba(255, 107, 91, 0.08);
+    border: 1px dashed rgba(255, 107, 91, 0.4);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  /* --- Chart --- */
+  .chart-wrap { margin-top: 28px; }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+  .axis-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    fill: var(--chalk-dim);
+  }
+  .grid-tick { stroke: rgba(244, 241, 232, 0.12); stroke-width: 1; }
+  .line-solid { stroke: var(--mint); stroke-width: 2.5; fill: none; }
+  .line-dashed { stroke: var(--red-pen); stroke-width: 2; fill: none; stroke-dasharray: 6 6; }
+  .safe-marker { stroke: rgba(244, 241, 232, 0.25); stroke-width: 1; stroke-dasharray: 3 4; }
+  .point-dot { fill: var(--yellow); stroke: var(--board-2); stroke-width: 2; }
+
+  /* --- Tech stack --- */
+  .stack {
+    margin-top: 34px;
+    padding-top: 22px;
+    border-top: 1px dashed rgba(244, 241, 232, 0.18);
+  }
+
+  .stack .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 10px;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    padding: 5px 10px;
+    border: 1px solid rgba(127, 216, 176, 0.35);
+    border-radius: 5px;
+    color: var(--mint);
+    background: rgba(127, 216, 176, 0.05);
+  }
+
+  .model-meta {
+    margin-top: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--chalk-dim);
+  }
+
+  footer {
+    margin-top: 26px;
+    text-align: right;
+  }
+
+  .signature {
+    font-family: 'Caveat', cursive;
+    font-size: 26px;
+    color: var(--chalk);
+  }
+
+  .signature .by {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--chalk-dim);
+    display: block;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: -2px;
+  }
+
+  @media (max-width: 480px) {
+    .board { padding: 28px 20px 24px; }
+    h1 { font-size: 40px; }
+    .result .value { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="board">
+    <header>
+      <p class="eyebrow">Simple Linear Regression</p>
+      <h1>Marks Predictor</h1>
+      <p class="subtitle">Estimate exam marks from hours studied</p>
+    </header>
+
+    <form method="POST" action="/">
+      <label for="hours">Hours studied today</label>
+      <div class="input-wrap">
+        <input
+          type="number"
+          id="hours"
+          name="hours"
+          step="0.1"
+          min="0"
+          max="24"
+          placeholder="e.g. 5.5"
+          value="{{ hours if hours is not none else '' }}"
+          required
+        />
+        <span class="unit">hrs</span>
+      </div>
+      <button type="submit">Predict my marks</button>
+    </form>
+
+    {% if error %}
+      <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+    {% if prediction is not none %}
+      <div class="result">
+        <div class="label">Predicted marks</div>
+        <div class="value">{{ prediction }}</div>
+        <div class="hint">based on {{ hours }} hour(s) of study</div>
+      </div>
+
+      {% if not reliable %}
+        <div class="unreliable-note">
+          Raw model output was {{ raw_prediction }}, outside the 0–100 scale — shown capped at {{ prediction }}.
+          Beyond about {{ chart.safe_hours_label }} hours the model is extrapolating past what it can reliably predict.
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <div class="chart-wrap">
+      <svg viewBox="0 0 {{ chart.w }} {{ chart.h + 30 }}" xmlns="http://www.w3.org/2000/svg">
+        <!-- grid -->
+        {% for i in range(0, 5) %}
+          <line class="grid-tick" x1="0" y1="{{ (chart.h / 4) * i }}" x2="{{ chart.w }}" y2="{{ (chart.h / 4) * i }}" />
+        {% endfor %}
+        <text class="axis-label" x="4" y="12">100</text>
+        <text class="axis-label" x="4" y="{{ chart.h - 4 }}">0 marks</text>
+        <text class="axis-label" x="{{ chart.w - 40 }}" y="{{ chart.h + 20 }}">24 hrs</text>
+        <text class="axis-label" x="0" y="{{ chart.h + 20 }}">0</text>
+
+        <!-- reliable-range marker -->
+        <line class="safe-marker" x1="{{ chart.safe_hours_x }}" y1="0" x2="{{ chart.safe_hours_x }}" y2="{{ chart.h }}" />
+        <text class="axis-label" x="{{ chart.safe_hours_x + 4 }}" y="{{ chart.h + 20 }}">~{{ chart.safe_hours_label }} hrs</text>
+
+        <!-- regression line -->
+        <line class="line-solid" x1="{{ chart.solid.x1 }}" y1="{{ chart.solid.y1 }}" x2="{{ chart.solid.x2 }}" y2="{{ chart.solid.y2 }}" />
+        {% if chart.dashed %}
+          <line class="line-dashed" x1="{{ chart.dashed.x1 }}" y1="{{ chart.dashed.y1 }}" x2="{{ chart.dashed.x2 }}" y2="{{ chart.dashed.y2 }}" />
+        {% endif %}
+
+        <!-- predicted point -->
+        {% if point %}
+          <circle class="point-dot" cx="{{ point.x }}" cy="{{ point.y }}" r="6" />
+        {% endif %}
+      </svg>
+    </div>
+
+    <section class="stack">
+      <div class="label">Built with</div>
+      <div class="tags">
+        {% for t in tech_stack %}
+          <span class="tag">{{ t }}</span>
+        {% endfor %}
+      </div>
+      <div class="model-meta">model: marks = {{ coef }} × hours + {{ intercept }}</div>
+    </section>
+
+    <footer>
+      <div class="signature">
+        <span class="by">Built by</span>
+        {{ author }}
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>
